@@ -1,0 +1,138 @@
+name: Deploy Application
+
+on:
+  push:
+    branches:
+      - main
+      - v1
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.REPO_TOKEN }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run ESLint
+        run: npm run lint
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.REPO_TOKEN }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs:
+      - lint
+      - test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.REPO_TOKEN }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install SSH key
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add SSH host key
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H 213.35.107.160 >> ~/.ssh/known_hosts
+
+      - name: Deploy to server
+        run: |
+          # Taking backup of existing node project
+          ssh ubuntu@213.35.107.160 << 'EOF'
+            cd /home/ubuntu || exit
+            BKP_DATE=$(date +%F)
+            # Check if the backup directory already exists and remove it if so
+            if [ -d "kavya-$BKP_DATE" ]; then
+              echo "Backup directory kavya-$BKP_DATE exists. Removing it."
+              rm -rf kavya-$BKP_DATE
+            fi
+            # Move the current kavya directory to backup
+            if [ -d "kavya" ]; then
+              mv kavya kavya-$BKP_DATE
+            else
+              echo "No existing kavya directory found to back up."
+            fi
+            mkdir -p kavya
+          EOF
+
+          # Copying source code to the server path
+          rsync -av --exclude 'node_modules' . ubuntu@213.35.107.160:/home/ubuntu/kavya/
+
+          # SSH and deploy
+          ssh ubuntu@213.35.107.160 << 'EOF'
+            cd /home/ubuntu/kavya || exit
+            pkill -f "node sample.js" || true
+            npm install
+            nohup node sample.js > sample.log 2>&1 &
+          EOF
+
+  validate:
+    runs-on: ubuntu-latest
+    needs:
+      - lint
+      - test
+      - deploy
+    steps:
+      - name: Ensure all previous jobs completed
+        run: echo "All previous jobs (lint, test, deploy) have completed successfully."
+
+  notify:
+    runs-on: ubuntu-latest
+    needs:
+      - validate
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.REPO_TOKEN }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run notification script
+        run: node notify.js

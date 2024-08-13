@@ -1,0 +1,29 @@
+{
+  "name": "helloworld",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon sample.js",
+    "test": "mocha test/**/*.test.js",
+    "lint": "eslint . --ignore-pattern test"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.3",
+    "dotenv": "^16.4.5",
+    "eslint": "^9.8.0",
+    "express": "^4.19.2",
+    "node-fetch": "^3.3.2",
+    "nodemailer": "^6.9.14",
+    "nodemon": "^3.1.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.7.0",
+    "globals": "^15.8.0",
+    "mocha": "^10.7.0",
+    "supertest": "^7.0.0"
+  }
+}
