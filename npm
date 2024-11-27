@@ -26,6 +26,20 @@ pipeline {
                 }
 
             }
+            post {
+                success {
+                    mail subject : "build_done",
+                          body   :  "build was sucess"
+                          to     :  'sss@gmail.com'
+                }
+            }
+            post {
+                failure {
+                    mail subject : "build_error",
+                          body   :  "build was failed"
+                          to     :  'sss@gmail.com'
+                }
+            }
 
         }
     
