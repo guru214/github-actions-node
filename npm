@@ -13,6 +13,9 @@ pipeline {
                     branch : main 
                     }
                 }
+                stage('install') {
+                    sh script : 'npm install'
+                }
                 stage('install the dependencies'){
                     steps {
                         sh script : 'npm install --save-dev nodemon'
