@@ -1,7 +1,7 @@
 pipeline {
     agent any
         options {
-            timeout(time: 10, unit:'minute')
+            timeout(time: 10, unit:'MINUTES')
         }
         triggers {
             pollSCM('H */3 * * 1-5')
