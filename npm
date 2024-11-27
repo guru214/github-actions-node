@@ -14,9 +14,11 @@ pipeline {
                     }
                 }
                 stage('install') {
-                    sh script : 'npm install'
+                    steps {
+                      sh script : 'npm install'  
+                    }
                 }
-                stage('install the dependencies'){
+                stage('install the dependencies') {
                     steps {
                         sh script : 'npm install --save-dev nodemon'
                     }
