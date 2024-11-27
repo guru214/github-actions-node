@@ -1,44 +1,40 @@
-pipeline {
+ pipeline {
     agent any
-        options {
-            timeout(time: 10, unit:'MINUTES')
-        }
-        triggers {
-            pollSCM('H */3 * * 1-5')
-        }
-        stages {
-            stage('git cloning') {
-                steps {
-                    git url : 'https://github.com/guru214/github-actions-node.git',
-                    branch : 'main' 
-                    }
-                }
-                stage('install the dependencies') {
-                    steps {
-                        sh script : 'npm install'
-                        sh script : 'npm install --save-dev nodemon'
-                    }
-                }
-                stage('build and package'){
-                    steps {
-                        sh script : 'npm start'
-                    }
-                }
-
-            }
-            post {
-                success {
-                     mail to: 'g9477715@gmail.com',
-                     subject: 'Build Done',
-                      body: 'The build was successful.'
-                }
-            }
-            post{
-               failure {
-                 mail to: 'g9477715@gmail.com',
-                    subject: 'build failed',
-                    body: 'the build was failed'.
-               }
+    options {
+        timeout(time: 10, unit: 'MINUTES')
+    }
+    triggers {
+        pollSCM('H */3 * * 1-5')  // Poll SCM every 3 hours from Monday to Friday
+    }
+    stages {
+        stage('Git Cloning') {
+            steps {
+                git url: 'https://github.com/guru214/github-actions-node.git',
+                    branch: 'main'
             }
         }
-    
+        stage('Install the Dependencies') {
+            steps {
+                sh 'npm install'
+                sh 'npm install --save-dev nodemon'
+            }
+        }
+        stage('Build and Package') {
+            steps {
+                sh 'npm start'
+            }
+        }
+    }
+    post {
+        success {
+            mail to: 'g9477715@gmail.com',
+                 subject: 'Build Done',
+                 body: 'The build was successful.'
+        }
+        failure {
+            mail to: 'g9477715@gmail.com',
+                 subject: 'Build Failed',
+                 body: 'The build failed.'
+        }
+    }
+}
