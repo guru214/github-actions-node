@@ -10,16 +10,12 @@ pipeline {
             stage('git cloning') {
                 steps {
                     git url : 'https://github.com/guru214/github-actions-node.git',
-                    branch : main 
-                    }
-                }
-                stage('install') {
-                    steps {
-                      sh script : 'npm install'  
+                    branch : 'main' 
                     }
                 }
                 stage('install the dependencies') {
                     steps {
+                        sh script : 'npm install'
                         sh script : 'npm install --save-dev nodemon'
                     }
                 }
